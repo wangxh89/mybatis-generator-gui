@@ -2,26 +2,16 @@ package com.zzg.mybatis.generator.controller;
 
 import com.zzg.mybatis.generator.model.DatabaseConfig;
 import com.zzg.mybatis.generator.util.DbUtil;
-import com.zzg.mybatis.generator.util.XMLConfigHelper;
+import com.zzg.mybatis.generator.util.ConfigHelper;
 import com.zzg.mybatis.generator.view.AlertUtil;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
-import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.TextField;
-import org.apache.commons.configuration2.XMLConfiguration;
-import org.apache.commons.configuration2.builder.FileBasedConfigurationBuilder;
-import org.apache.commons.configuration2.builder.fluent.Configurations;
-import org.apache.commons.configuration2.ex.ConfigurationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URL;
-import java.sql.Connection;
-import java.sql.Driver;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.util.Iterator;
 import java.util.ResourceBundle;
 
 public class NewConnectionController extends BaseFXController {
@@ -40,6 +30,8 @@ public class NewConnectionController extends BaseFXController {
     private TextField passwordField;
 //    @FXML
 //    private CheckBox savePwdCheckBox;
+    @FXML
+    private TextField schemaField;
     @FXML
     private ChoiceBox<String> encodingChoice;
     @FXML
@@ -69,9 +61,10 @@ public class NewConnectionController extends BaseFXController {
         dbConfig.setPassword(password);
 //        if (savePwdCheckBox.isSelected()) {
 //        }
+        dbConfig.setSchema(schemaField.getText());
         dbConfig.setEncoding(encoding);
         try {
-            XMLConfigHelper.saveDatabaseConfig(name, dbConfig);
+            ConfigHelper.saveDatabaseConfig(name, dbConfig);
             getDialogStage().close();
             mainUIController.loadLeftDBTree();
         } catch (Exception e) {
@@ -90,13 +83,15 @@ public class NewConnectionController extends BaseFXController {
         String encoding = encodingChoice.getValue();
         String dbType = dbTypeChoice.getValue();
         DatabaseConfig config = new DatabaseConfig();
+        config.setName(name);
         config.setDbType(dbType);
         config.setHost(host);
         config.setPort(port);
         config.setUsername(userName);
         config.setPassword(password);
+        config.setSchema(schemaField.getText());
         config.setEncoding(encoding);
-        String url = DbUtil.getConnectionUrlWithoutSchema(config);
+        String url = DbUtil.getConnectionUrlWithSchema(config);
         System.out.println(url);
         try {
             DbUtil.getConnection(config);

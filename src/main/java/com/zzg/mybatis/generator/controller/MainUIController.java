@@ -4,48 +4,28 @@ import java.io.File;
 import java.net.URL;
 import java.util.*;
 
+import com.mysql.jdbc.exceptions.jdbc4.CommunicationsException;
 import com.zzg.mybatis.generator.bridge.MybatisGeneratorBridge;
 import com.zzg.mybatis.generator.model.*;
 import com.zzg.mybatis.generator.util.DbUtil;
 import com.zzg.mybatis.generator.util.StringUtils;
-import com.zzg.mybatis.generator.util.XMLConfigHelper;
+import com.zzg.mybatis.generator.util.ConfigHelper;
 import com.zzg.mybatis.generator.view.AlertUtil;
-import com.zzg.mybatis.generator.view.LeftDbTreeCell;
 import com.zzg.mybatis.generator.view.UIProgressCallback;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.EventHandler;
-import javafx.event.EventType;
-import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.TextFieldTreeCell;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.text.Text;
+import javafx.stage.*;
 import javafx.util.Callback;
-import org.apache.commons.configuration2.HierarchicalConfiguration;
-import org.apache.commons.configuration2.XMLConfiguration;
-import org.apache.commons.configuration2.builder.fluent.Configurations;
-import org.apache.commons.configuration2.tree.ImmutableNode;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.mybatis.generator.api.MyBatisGenerator;
-import org.mybatis.generator.api.ProgressCallback;
-import org.mybatis.generator.api.ShellCallback;
-import org.mybatis.generator.api.VerboseProgressCallback;
 import org.mybatis.generator.config.*;
-import org.mybatis.generator.internal.DefaultShellCallback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
 import javafx.scene.image.ImageView;
-import javafx.stage.DirectoryChooser;
-import javafx.stage.FileChooser;
-import javafx.stage.FileChooser.ExtensionFilter;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
 
 public class MainUIController extends BaseFXController {
 
@@ -54,6 +34,8 @@ public class MainUIController extends BaseFXController {
     // tool bar buttons
     @FXML
     private Label connectionLabel;
+    @FXML
+    private Label configsLabel;
     @FXML
     private TextField connectorPathField;
     @FXML
@@ -99,8 +81,18 @@ public class MainUIController extends BaseFXController {
         dbImage.setFitWidth(40);
         connectionLabel.setGraphic(dbImage);
         connectionLabel.setOnMouseClicked(event -> {
-            NewConnectionController controller = (NewConnectionController) loadFXMLPage("New Connection", FXMLPage.NEW_CONNECTION);
+            NewConnectionController controller = (NewConnectionController) loadFXMLPage("New Connection", FXMLPage.NEW_CONNECTION, false);
             controller.setMainUIController(this);
+            controller.showDialogStage();
+        });
+        ImageView configImage = new ImageView("icons/config-list.png");
+        configImage.setFitHeight(40);
+        configImage.setFitWidth(40);
+        configsLabel.setGraphic(configImage);
+        configsLabel.setOnMouseClicked(event -> {
+            GeneratorConfigController controller = (GeneratorConfigController) loadFXMLPage("Generator Config", FXMLPage.GENERATOR_CONFIG, false);
+            controller.setMainUIController(this);
+            controller.showDialogStage();
         });
 
         leftDBTree.setShowRoot(false);
@@ -109,64 +101,58 @@ public class MainUIController extends BaseFXController {
         leftDBTree.setCellFactory((TreeView<String> tv) -> {
             TreeCell<String> cell = defaultCellFactory.call(tv);
             cell.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
-                if (event.getClickCount() == 2) {
-                    int level = leftDBTree.getTreeItemLevel(cell.getTreeItem());
-                    TreeCell<String> treeCell = (TreeCell<String>) event.getSource();
-                    TreeItem<String> item = treeCell.getTreeItem();
-                    item.setExpanded(true);
-                    if (level == 1) {
-                        DatabaseConfig selectedConfig = (DatabaseConfig) item.getGraphic().getUserData();
-                        // Accept clicks only on node cells, and not on empty spaces of the TreeView
-                        leftDBTree.getSelectionModel().getSelectedItem().setExpanded(true);
-                        System.out.println("Node click: " + selectedConfig);
-                        List<String> schemas = null;
+                int level = leftDBTree.getTreeItemLevel(cell.getTreeItem());
+                TreeCell<String> treeCell = (TreeCell<String>) event.getSource();
+                TreeItem<String> treeItem = treeCell.getTreeItem();
+                if (level == 1) {
+                    final ContextMenu contextMenu = new ContextMenu();
+                    MenuItem item1 = new MenuItem("新建连接");
+                    item1.setOnAction(event1 -> {
+                        treeItem.getChildren().clear();
+                    });
+                    MenuItem item2 = new MenuItem("删除连接");
+                    item2.setOnAction(event1 -> {
+                        DatabaseConfig selectedConfig = (DatabaseConfig) treeItem.getGraphic().getUserData();
                         try {
-                            schemas = DbUtil.getSchemas(selectedConfig);
-                            System.out.println(schemas);
-                            if (schemas != null && schemas.size() > 0) {
-                                ObservableList<TreeItem<String>> children = cell.getTreeItem().getChildren();
-                                children.clear();
-                                for (String schema : schemas) {
-                                    TreeItem<String> treeItem = new TreeItem<>();
-                                    ImageView imageView = new ImageView("icons/database.png");
-                                    imageView.setFitHeight(16);
-                                    imageView.setFitWidth(16);
-                                    treeItem.setGraphic(imageView);
-                                    treeItem.setValue(schema);
-                                    children.add(treeItem);
-                                }
-                            }
+                            ConfigHelper.deleteDatabaseConfig(selectedConfig.getName());
+                            this.loadLeftDBTree();
                         } catch (Exception e) {
-                            AlertUtil.showErrorAlert(e.getMessage() + "\n" + ExceptionUtils.getStackTrace(e));
+                            AlertUtil.showErrorAlert("Delete connection failed! Reason: " + e.getMessage());
                         }
-                    } else if (level == 2) {
+                    });
+                    contextMenu.getItems().addAll(item1, item2);
+                    cell.setContextMenu(contextMenu);
+                }
+                if (event.getClickCount() == 2) {
+                    treeItem.setExpanded(true);
+                    if (level == 1) {
                         System.out.println("index: " + leftDBTree.getSelectionModel().getSelectedIndex());
-                        DatabaseConfig selectedConfig = (DatabaseConfig) item.getParent().getGraphic().getUserData();
-                        String schema = treeCell.getTreeItem().getValue();
+                        DatabaseConfig selectedConfig = (DatabaseConfig) treeItem.getGraphic().getUserData();
                         try {
-                            List<String> tables = DbUtil.getTableNames(selectedConfig, schema);
+                            List<String> tables = DbUtil.getTableNames(selectedConfig);
                             if (tables != null && tables.size() > 0) {
                                 ObservableList<TreeItem<String>> children = cell.getTreeItem().getChildren();
                                 children.clear();
                                 for (String tableName : tables) {
-                                    TreeItem<String> treeItem = new TreeItem<>();
+                                    TreeItem<String> newTreeItem = new TreeItem<>();
                                     ImageView imageView = new ImageView("icons/table.png");
                                     imageView.setFitHeight(16);
                                     imageView.setFitWidth(16);
-                                    treeItem.setGraphic(imageView);
-                                    treeItem.setValue(tableName);
-                                    children.add(treeItem);
+                                    newTreeItem.setGraphic(imageView);
+                                    newTreeItem.setValue(tableName);
+                                    children.add(newTreeItem);
                                 }
                             }
+                        } catch (CommunicationsException e) {
+                            _LOG.error(e.getMessage(), e);
+                            AlertUtil.showErrorAlert("Connection timeout");
                         } catch (Exception e) {
                             _LOG.error(e.getMessage(), e);
                             AlertUtil.showErrorAlert(e.getMessage());
                         }
-                    } else if (level == 3) { // left DB tree level3
+                    } else if (level == 2) { // left DB tree level3
                         String tableName = treeCell.getTreeItem().getValue();
-                        selectedDatabaseConfig = (DatabaseConfig)item.getParent().getParent().getGraphic().getUserData();
-                        String schema = item.getParent().getValue();
-                        selectedDatabaseConfig.setSchema(schema);
+                        selectedDatabaseConfig = (DatabaseConfig) treeItem.getParent().getGraphic().getUserData();
                         this.tableName = tableName;
                         tableNameField.setText(tableName);
                         domainObjectNameField.setText(StringUtils.dbStringToCamelStyle(tableName));
@@ -183,7 +169,7 @@ public class MainUIController extends BaseFXController {
         rootTreeItem.getChildren().clear();
         List<DatabaseConfig> dbConfigs = null;
         try {
-            dbConfigs = XMLConfigHelper.loadDatabaseConfig();
+            dbConfigs = ConfigHelper.loadDatabaseConfig();
             for (DatabaseConfig dbConfig : dbConfigs) {
                 TreeItem<String> treeItem = new TreeItem<>();
                 treeItem.setValue(dbConfig.getName());
@@ -238,6 +224,25 @@ public class MainUIController extends BaseFXController {
         }
     }
 
+    @FXML
+    public void saveGeneratorConfig() {
+        TextInputDialog dialog = new TextInputDialog("保存配置");
+        dialog.setTitle("保存当前配置");
+        dialog.setContentText("请输入配置名称");
+        Optional<String> result = dialog.showAndWait();
+        if (result.isPresent()) {
+            String name = result.get();
+            _LOG.info("user choose name: {}", name);
+            try {
+                GeneratorConfig generatorConfig = getGeneratorConfigFromUI();
+                generatorConfig.setName(name);
+                ConfigHelper.saveGeneratorConfig(generatorConfig);
+            } catch (Exception e) {
+                AlertUtil.showErrorAlert("删除配置失败");
+            }
+        }
+    }
+
     public GeneratorConfig getGeneratorConfigFromUI() {
         GeneratorConfig generatorConfig = new GeneratorConfig();
         generatorConfig.setConnectorJarPath(connectorPathField.getText());
@@ -272,12 +277,12 @@ public class MainUIController extends BaseFXController {
             AlertUtil.showErrorAlert("Please select table from left DB treee first");
             return;
         }
-        SelectTableColumnController controller = (SelectTableColumnController) loadFXMLPage("Select Columns", FXMLPage.SELECT_TABLE_COLUMN);
+        SelectTableColumnController controller = (SelectTableColumnController) loadFXMLPage("Select Columns", FXMLPage.SELECT_TABLE_COLUMN, true);
         controller.setMainUIController(this);
         try {
             // If select same schema and another table, update table data
             if (!tableName.equals(controller.getTableName())) {
-                List<UITableColumnVO> tableColumns = DbUtil.getTableColumns(selectedDatabaseConfig, selectedDatabaseConfig.getSchema(), tableName);
+                List<UITableColumnVO> tableColumns = DbUtil.getTableColumns(selectedDatabaseConfig, tableName);
                 controller.setColumnList(FXCollections.observableList(tableColumns));
                 controller.setTableName(tableName);
             }

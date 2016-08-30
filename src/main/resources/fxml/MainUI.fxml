@@ -40,6 +40,7 @@
                                 <Cursor fx:constant="HAND" />
                             </cursor>
                         </Label>
+                  <Label fx:id="configsLabel" contentDisplay="TOP" text="Generator Configs" />
                     </items>
                 </ToolBar>
             </children>
@@ -81,7 +82,11 @@
                                       <Button mnemonicParsing="false" onAction="#chooseConnectorFile" text="Choose" GridPane.columnIndex="3">
                                  <GridPane.margin>
                                     <Insets left="5.0" />
-                                 </GridPane.margin></Button>
+                                 </GridPane.margin>
+                                 <styleClass>
+                                    <String fx:value="btn" />
+                                    <String fx:value="btn-default" />
+                                 </styleClass></Button>
                                       <Label text="Table Name" GridPane.rowIndex="1" />
                                       <TextField fx:id="tableNameField" promptText="person" GridPane.columnIndex="1" GridPane.rowIndex="1">
                                           <GridPane.margin>
@@ -102,7 +107,11 @@
                                                       <Insets right="5.0" />
                                                   </HBox.margin>
                                               </TextField>
-                                              <Button mnemonicParsing="false" onAction="#chooseProjectFolder" text="Choose" />
+                                              <Button mnemonicParsing="false" onAction="#chooseProjectFolder" text="Choose">
+                                       <styleClass>
+                                          <String fx:value="btn" />
+                                          <String fx:value="btn-default" />
+                                       </styleClass></Button>
                                           </children>
                                       </HBox>
                                       <Label text="Model Package" GridPane.rowIndex="4" />
@@ -143,12 +152,29 @@
                                       <TextField fx:id="mappingTargetProject" promptText="src/main/resources" GridPane.columnIndex="3" GridPane.rowIndex="6" />
                               <HBox alignment="CENTER_LEFT" spacing="10.0" GridPane.columnIndex="1" GridPane.columnSpan="3" GridPane.rowIndex="7">
                                  <children>
-                                    <CheckBox fx:id="offsetLimitCheckBox" mnemonicParsing="false" selected="true" text="offset/limit" GridPane.columnIndex="1" GridPane.rowIndex="7" />
-                                    <CheckBox fx:id="commentCheckBox" mnemonicParsing="false" selected="true" text="column remarks" />
+                                    <CheckBox fx:id="offsetLimitCheckBox" mnemonicParsing="false" selected="true" text="Pagination" GridPane.columnIndex="1" GridPane.rowIndex="7" />
+                                    <CheckBox fx:id="commentCheckBox" mnemonicParsing="false" selected="true" text="Use Column Comments As Java Model Comments" />
                                  </children>
                               </HBox>
-                                      <Button mnemonicParsing="false" onAction="#generateCode" text="Generate" GridPane.columnIndex="1" GridPane.rowIndex="8" />
-                              <Button mnemonicParsing="false" onAction="#openTableColumnCustomizationPage" text="Customize" GridPane.columnIndex="2" GridPane.rowIndex="2" />
+                              <Button mnemonicParsing="false" onAction="#openTableColumnCustomizationPage" text="Choose" GridPane.columnIndex="2" GridPane.rowIndex="2">
+                                 <styleClass>
+                                    <String fx:value="btn" />
+                                    <String fx:value="btn-default" />
+                                 </styleClass></Button>
+                              <HBox prefHeight="100.0" prefWidth="200.0" spacing="10.0" GridPane.columnIndex="1" GridPane.columnSpan="3" GridPane.rowIndex="8">
+                                 <children>
+                                            <Button mnemonicParsing="false" onAction="#generateCode" text="Generate">
+                                       <styleClass>
+                                          <String fx:value="btn-success" />
+                                          <String fx:value="btn" />
+                                       </styleClass></Button>
+                                    <Button mnemonicParsing="false" onAction="#saveGeneratorConfig" text="Save Config">
+                                       <styleClass>
+                                          <String fx:value="btn" />
+                                          <String fx:value="btn-default" />
+                                       </styleClass></Button>
+                                 </children>
+                              </HBox>
                                   </children>
                               </GridPane>
                      </children>

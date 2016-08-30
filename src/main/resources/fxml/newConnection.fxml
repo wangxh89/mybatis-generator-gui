@@ -23,6 +23,7 @@
             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
         </rowConstraints>
          <children>
             <Label text="Connection Name:" />
@@ -31,7 +32,9 @@
             <ChoiceBox fx:id="dbTypeChoice" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
                 <items>
                     <FXCollections fx:factory="observableArrayList">
-                        <String fx:value="MYSQL" />
+                        <String fx:value="MySQL" />
+                        <String fx:value="Oracle" />
+                        <String fx:value="PostgreSQL" />
                     </FXCollections>
                 </items>
             </ChoiceBox>
@@ -48,21 +51,37 @@
                   <CheckBox fx:id="savePwdCheckBox" mnemonicParsing="false" text="Save password" visible="false" />
                </children>
             </HBox>
-            <Label text="Encoding:" GridPane.rowIndex="6" />
-            <ChoiceBox fx:id="encodingChoice" maxWidth="1.7976931348623157E308" prefWidth="150.0" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="6">
+            <Label text="Encoding:" GridPane.rowIndex="7" />
+            <TextField fx:id="schemaField" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+            <ChoiceBox fx:id="encodingChoice" maxWidth="1.7976931348623157E308" prefWidth="150.0" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="7">
                 <items>
                     <FXCollections fx:factory="observableArrayList">
-                        <String fx:value="UTF-8" />
+                        <String fx:value="utf8" />
+                        <String fx:value="gb2312" />
+                        <String fx:value="gbk" />
                     </FXCollections>
                 </items>
              </ChoiceBox>
+            <Label text="Database:" GridPane.rowIndex="6" />
          </children>
       </GridPane>
       <AnchorPane layoutY="390.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
          <children>
-            <Button layoutX="27.0" layoutY="6.0" mnemonicParsing="false" onAction="#testConnection" text="Test Connection" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="10.0" />
-          <Button layoutX="467.0" layoutY="12.0" mnemonicParsing="false" onAction="#saveConnection" prefHeight="28.0" prefWidth="61.0" styleClass="btn-primary" text="OK" textFill="WHITE" AnchorPane.bottomAnchor="5.0" AnchorPane.rightAnchor="10.0" />
-            <Button layoutX="427.0" mnemonicParsing="false" onAction="#cancel" text="Cancel" AnchorPane.bottomAnchor="5.0" />
+            <Button layoutX="27.0" layoutY="6.0" mnemonicParsing="false" onAction="#testConnection" text="Test Connection" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="10.0">
+               <styleClass>
+                  <String fx:value="btn" />
+                  <String fx:value="btn-default" />
+               </styleClass></Button>
+          <Button layoutX="467.0" layoutY="12.0" mnemonicParsing="false" onAction="#saveConnection" prefHeight="28.0" prefWidth="61.0" text="OK" textFill="WHITE" AnchorPane.bottomAnchor="5.0" AnchorPane.rightAnchor="10.0">
+               <styleClass>
+                  <String fx:value="btn-success" />
+                  <String fx:value="btn" />
+               </styleClass></Button>
+            <Button layoutX="427.0" mnemonicParsing="false" onAction="#cancel" text="Cancel" AnchorPane.bottomAnchor="5.0">
+               <styleClass>
+                  <String fx:value="btn" />
+                  <String fx:value="btn-default" />
+               </styleClass></Button>
          </children>
       </AnchorPane>
    </children>
