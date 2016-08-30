@@ -32,13 +32,10 @@ mybatis-generator-gui是基于[mybatis generator](http://www.mybatis.org/generat
 
 
     cd target/jfx/app/
+
     "c:\Program Files\Java\jdk1.8.0_91\bin\java.exe" -jar mybatis-generator-gui.jar
 
 * Eclipse or IntelliJ IDEA中启动, 找到MainUI类并运行就可以了
-
-### 文档
-更多详细文档请参考本库的Wiki
-* [Usage](https://github.com/wangxh89/mybatis-generator-gui/wiki/Usage-Guide)
 
 
 ### 贡献
